@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Application Detail • ADCB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ADCB Color Palette */
+    :root {
+      --adcb-red: #e60000;
+      --adcb-black: #000000;
+      --adcb-white: #ffffff;
+      --adcb-light-gray: #f5f5f5;
+      --adcb-dark-gray: #4d4d4d;
+      --adcb-border-gray: #dddddd;
+      --adcb-success: #28a745;
+      --adcb-warning: #ffc107;
+      --adcb-danger: #dc3545;
+      --adcb-info: #17a2b8;
+    }
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--adcb-light-gray);
+      color: var(--adcb-dark-gray);
+      margin: 0;
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 250px;
+      background: var(--adcb-white);
+      height: 100vh;
+      border-right: 1px solid var(--adcb-border-gray);
+      padding-top: 24px;
+      flex-shrink: 0;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+    }
+    .sidebar .logo {
+      padding: 0 24px 24px;
+      border-bottom: 1px solid var(--adcb-border-gray);
+      margin-bottom: 24px;
+    }
+    .sidebar .logo img {
+      height: 24px;
+    }
+    .sidebar nav a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      color: var(--adcb-dark-gray);
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .sidebar nav a:hover {
+      background: #f0f0f0;
+      color: var(--adcb-red);
+    }
+    .sidebar nav a.active {
+      background: var(--adcb-light-gray);
+      font-weight: 700;
+      border-left: 4px solid var(--adcb-red);
+      padding-left: 20px;
+      color: var(--adcb-red);
+    }
+    .main-content {
+      flex-grow: 1;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .page-header { display: flex; align-items: center; justify-content: space-between; }
+    .page-header h1 { margin: 0; font-size: 28px; font-weight: 600; color: var(--adcb-black); }
+
+    /* Content grid: left Info panel + right detail cards */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 1200px) {
+      .content-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Card */
+    .card {
+      background: var(--adcb-white);
+      border: 1px solid var(--adcb-border-gray);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+    .card h2 { margin: 0; font-size: 18px; font-weight: 600; color: var(--adcb-black); }
+    .card .header { padding: 16px 18px; border-bottom: 1px solid var(--adcb-border-gray); background: #fafafa; }
+    .card .body { padding: 16px 18px; }
+
+    /* Key-value table & tables — align with other pages */
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #fafafa; color: var(--adcb-dark-gray); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding: 14px; font-size: 12px; }
+    td { padding: 12px 16px; border-top: 1px solid var(--adcb-border-gray); font-size: 14px; }
+
+    /* Buttons */
+    .btn { padding: 8px 16px; border-radius: 4px; border: 1px solid transparent; font-weight: 600; font-size: 14px; cursor: pointer; transition: background-color 0.2s ease, transform 0.1s ease; }
+    .btn.primary { background: var(--adcb-red); color: var(--adcb-white); }
+    .btn.primary:hover { background-color: #c01e16; }
+    .btn.alt { background: #e9ecef; border-color: var(--adcb-border-gray); color: var(--adcb-dark-gray); }
+    .btn.danger { background: var(--adcb-danger); color: var(--adcb-white); }
+
+    /* Badges & pills */
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+    .badge.good { background-color: #d1fae5; color: #065f46; }
+    .badge.warn { background-color: #fef3c7; color: #92400e; }
+    .badge.info { background-color: #dbeafe; color: #1e40af; }
+
+    /* Mini bits used by the original detail */
+    .avatar { width: 64px; height: 64px; border-radius: 10px; background: #E8EEFF; display: grid; place-items: center; font-weight: 700; color: #1f2937; }
+    .kv { display: grid; grid-template-columns: 140px 1fr; gap: 6px; font-size: 13.5px; padding: 8px 0; }
+    .kv .k { color: #7C7C7C; }
+    .tag { display: inline-flex; padding: 6px 10px; border-radius: 999px; border: 1px solid #E4EAF3; background: #F5F8FF; color: #1E3A8A; font-weight: 600; font-size: 12px; margin-right: 6px; margin-top: 6px; }
+    .sub { color: var(--adcb-dark-gray); font-size: 12px; }
+    textarea { width: 100%; min-height: 56px; border: 1px solid var(--adcb-border-gray); border-radius: 4px; padding: 10px; background: #fff; font-family: inherit; resize: vertical; }
+
+    /* Simple utility */
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    @media (max-width: 900px) { .grid-3 { grid-template-columns: 1fr; } .grid-2 { grid-template-columns: 1fr; } }
+  
+/* === Status Module (embedded) === */
+.status-module .stages{display:flex;gap:10px;align-items:center;flex-wrap:nowrap;white-space:nowrap;overflow-x:auto;padding:6px 0}
+.status-module .stage-pill{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;font-size:12px}
+.status-module .stage-pill.done{background:#ecfdf5;border-color:#bbf7d0;color:#065f46}
+.status-module .stage-pill.current{background:#fff7ed;border-color:#fed7aa;color:#9a3412;font-weight:700}
+.status-module .connector{height:2px;width:22px;background:#e5e7eb;flex:0 0 22px}
+.status-module .progress{height:8px;border-radius:999px;background:#eef2ff;overflow:hidden;margin-top:10px}
+.status-module .progress>div{height:100%;background:#6366f1;width:0}
+
+.status-module details{border:1px solid #e5e7eb;border-radius:10px;background:#fff;margin-top:12px}
+.status-module summary{list-style:none;padding:10px 12px;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:8px}
+.status-module summary::before{content:'▸';display:inline-block;transition:transform .2s ease}
+.status-module details[open] summary::before{transform:rotate(90deg)}
+
+.status-module .timeline{position:relative}
+.status-module .timeline:before{content:"";position:absolute;left:12px;top:0;bottom:0;width:2px;background:#e5e7eb}
+.status-module .t-item{display:grid;grid-template-columns:24px 1fr;column-gap:12px;margin:14px 0}
+.status-module .t-dot{grid-column:1;width:10px;height:10px;border-radius:999px;background:#94a3b8;border:2px solid #fff;box-shadow:0 0 0 2px #e5e7eb;justify-self:center;margin-top:4px}
+.status-module .t-item.done .t-dot{background:#10b981}
+.status-module .t-item.current .t-dot{background:#f59e0b}
+.status-module .t-title{grid-column:2;font-weight:700;display:flex;align-items:center;gap:8px}
+.status-module .t-meta{grid-column:2;font-size:12px;color:#64748b}
+.status-module .datepill{display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border:1px solid #e5e7eb;border-radius:999px;background:#fff;font-size:12px;color:#374151}
+.status-module .mermaid{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px}
+
+  /* Loading State Styles */
+  #loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-size: 24px;
+    color: var(--adcb-dark-gray);
+    flex-grow: 1;
+  }
+  #loading-spinner.hidden {
+    display: none;
+  }
+</style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo">
+      <img src="logo.svg" alt="ADCB Logo" style="height: 24px;">
+    </div>
+    <nav>
+      <a href="dashboard.html" class="nav-link"><span>📊</span> Dashboard</a>
+      <a href="applications.html" class="nav-link active"><span>🗂</span> Applications</a>
+      <a href="customers.html" class="nav-link"><span>👥</span> Customers</a>
+      <a href="tasks.html" class="nav-link"><span>✅</span> Tasks</a>
+      <a href="reports.html" class="nav-link"><span>📈</span> Reports</a>
+      <a href="settings.html" class="nav-link"><span>⚙️</span> Settings</a>
+      <a href="logout.html" class="nav-link"><span>🚪</span> Logout</a>
+    </nav>
+  </aside>
+
+  <div id="loading-spinner">Loading...</div>
+
+  <main class="main-content" id="app" style="display: none;">
+    <div class="page-header">
+      <h1>Application Detail</h1>
+    </div>
+    
+    <section class="card status-module" id="status-card">
+      <div class="header"><h2>Application Status</h2></div>
+      <div class="body">
+        <div id="stagePills" class="stages" aria-label="Application stages"></div>
+        <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+
+        <details id="d-timeline">
+          <summary>Activity Timeline</summary>
+          <div class="timeline" id="timeline"></div>
+        </details>
+
+        <details id="d-flow">
+          <summary>Decision Flow</summary>
+          <div class="mermaid" id="mmd"></div>
+        </details>
+      </div>
+    </section>
+
+    <div class="content-grid">
+      <section class="card" aria-labelledby="profile-meta">
+        <div class="header"><h2 id="profile-meta">Profile & Status</h2></div>
+        <div class="body" style="text-align:center">
+          <div id="profile-picture" class="avatar" style="margin:0 auto 10px;"></div>
+          <div id="profile-name" style="font-weight:600; font-size:16px"></div>
+          <div id="application-time" class="sub" style="margin-top:4px"></div>
+          <div id="status-badge" style="margin-top:10px"></div>
+        </div>
+        <div class="header"><h2>Properties</h2></div>
+        <div class="body" id="properties-body">
+        </div>
+        <div class="header"><h2>Tags</h2></div>
+        <div class="body" id="tags-body">
+        </div>
+        <div class="header"><h2>Attachments</h2></div>
+        <div class="body" id="attachments-body">
+        </div>
+        <div class="header"><h2>Comments</h2></div>
+        <div class="body" id="comments-body">
+        </div>
+      </section>
+
+      <section style="display:flex; flex-direction: column; gap:16px">
+        <section class="card">
+          <div class="header"><h2>Approval</h2></div>
+          <div class="body">
+            <textarea placeholder="Write a comment"></textarea>
+            <div class="row" style="justify-content:flex-end; margin-top:10px">
+              <button class="btn primary">Approve</button>
+              <button class="btn alt">Total Reject</button>
+              <button class="btn danger">Move to Telemarketing</button>
+            </div>
+          </div>
+        </section>
+
+        <div class="grid-3">
+          <section class="card">
+            <div class="header"><h2>Job Details</h2></div>
+            <div class="body" id="job-details-body"></div>
+          </section>
+
+          <section class="card">
+            <div class="header"><h2>Limits</h2></div>
+            <div class="body" id="limits-body"></div>
+          </section>
+
+          <section class="card">
+            <div class="header"><h2>AECB</h2></div>
+            <div class="body" id="aecb-body"></div>
+          </section>
+        </div>
+
+        <div class="grid-2">
+          <section class="card">
+            <div class="header"><h2>Account</h2></div>
+            <div class="body" style="padding:0">
+              <table id="account-table"></table>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="header"><h2>Personal</h2></div>
+            <div class="body" style="padding:0">
+              <table id="personal-table"></table>
+            </div>
+          </section>
+        </div>
+
+        <div class="grid-2">
+          <section class="card">
+            <div class="header"><h2>KYC Documents</h2></div>
+            <div class="body" id="kyc-docs-body"></div>
+          </section>
+
+          <section class="card">
+            <div class="header"><h2>KYC Details</h2></div>
+            <div class="body" style="padding:0">
+              <table id="kyc-details-table"></table>
+            </div>
+          </section>
+        </div>
+
+        <section class="card">
+          <div class="header"><h2>History</h2></div>
+          <div class="body" id="history-body">
+          </div>
+        </section>
+      </section>
+    </div>
+  </main>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+(function(){
+  // Bu değişken, gerçek bir API çağrısının başarılı (true) veya başarısız/zaman aşımına uğramış (false)
+  // durumunu simüle etmek için kullanılır. Gerçek bir uygulamada bu değişken bulunmaz.
+  const isApiWorking = true;
+
+  // Gerçek bir API çağrısı başarısız olduğunda veya zaman aşımına uğradığında
+  // gösterilecek olan varsayılan veriler.
+  const DEFAULT_DATA = {
+    profile: {
+      status: "KYC Pending",
+      profilePicture: "assets/kendrick.png",
+      name: "Kendrick Bowen",
+      applicationTime: "June 8"
+    },
+    properties: {
+      Progress: "KYC Check",
+      Category: "Credit Card",
+      Task_owner: "Admin 123",
+      Urgency: "High",
+      Last_Update: "June 11, 2025"
+    },
+    tags: [
+      'Dubai', 'Empay C001'
+    ],
+    attachments: [
+      { fileName: 'DEWA Statement.pdf', fileType: 'PDF', fileSize: '4 MB', uploaded: 'Today' },
+      { fileName: 'Employee.jpg', fileType: 'JPG', fileSize: '2 MB', uploaded: 'Yesterday' }
+    ],
+    comments: [
+      { by: "User 123", text: "Passport copy has been uploaded." },
+      { by: "Admin 123", text: "Awaiting documents from the customer." }
+    ],
+    timeline: [
+      { title:'AIP Pending', by:'System', date:'June 8, 2025 10:15', state:'done' },
+      { title:'DE Success', by:'System', date:'June 8, 2025 10:30', state:'done' },
+      { title:'Temp Limit Confirmed', by:'System', date:'June 8, 2025 10:45', state:'done' },
+      { title:'Salary IBAN Collected', by:'System', date:'June 8, 2025 11:00', state:'done' },
+      { title:'Final Offer', by:'System', date:'June 8, 2025 11:05', state:'done' },
+      { title:'KYC Pending - awaiting documents', by:'Backoffice', date:'June 8, 2025 11:05', state:'current' },
+    ],
+    history: [
+      { title: 'Application Received', by: 'System', date: 'June 8, 2025', sub: '3 days ago' },
+      { title: 'KYC Pending', by: 'Backoffice', date: 'June 8, 2025', sub: '3 days ago' }
+    ],
+    jobDetails: {
+      'Monthly Income': 'AED 15,000',
+      'Employee': 'Unitech Trade LLC.',
+      'Salary Account': 'AE07 0331 2345 6789 0123 456'
+    },
+    limits: {
+      'Requested Card Limit': 'AED 15,000',
+      'Provisional Limit': 'AED 10,000',
+      'Approved Limit': 'AED 10,000'
+    },
+    aecb: {
+      'Score': '670',
+      'AECB Band': 'B1',
+      'AECB Risk Rate': 'LR'
+    },
+    account: {
+      'Client Reference Number': 'EMP202127000332',
+      'CIF ID': '—',
+      'AWB Number': '82382308423',
+      'Generated IBAN': 'AE07 0331 1765 5634 2204 554'
+    },
+    personal: {
+      'First Name': 'Kendrick',
+      'Last Name': 'Bowen',
+      'Middle Name': '-',
+      'Nationality': 'United States',
+      'Gender': 'Male'
+    },
+    kycDetails: {
+      'EID Number': '784-1986-3424656-6',
+      'EID Expiry Date': '15.04.2026',
+      'Passport Number': 'E02341249',
+      'Passport Expiry': '36.08.2030',
+      'PO Box': '—',
+      'Declined Reason': '—',
+      'Bank Declined Reason': '—',
+      'KYC Status Message': '—'
+    },
+    kycDocuments: [
+      { title: 'EID Front', date: 'June 09, 2022 at 12:00 AM' },
+      { title: 'EID Back', date: 'June 09, 2022 at 12:00 AM' },
+      { title: 'Passport Copy', date: 'June 09, 2022 at 19:00 AM' }
+    ]
+  };
+
+  // Bu nesne, gerçek bir API çağrısından DÖNECEK verinin yapısını ve içeriğini
+  // simüle etmek için kullanılır. Gerçek bir projede bu nesneye ihtiyacınız olmaz,
+  // bunun yerine 'fetch' çağrısının döndürdüğü gerçek veriler kullanılır.
+  const SUCCESS_DATA = {
+    profile: {
+      status: "KYC Fulfilled",
+      profilePicture: "assets/ali.png",
+      name: "Ali Veli",
+      applicationTime: "August 10"
+    },
+    properties: {
+      Progress: "Second Approval",
+      Category: "Credit Card",
+      Task_owner: "Supervisor 456",
+      Urgency: "Medium",
+      Last_Update: "August 13, 2025"
+    },
+    tags: [
+      'Empay 2024', 'Credit Card', 'Abu Dhabi', 'VIP Customer'
+    ],
+    attachments: [
+      { fileName: 'Passport.jpg', fileType: 'JPG', fileSize: '1.2 MB', uploaded: 'Yesterday' },
+      { fileName: 'SalarySlip.pdf', fileType: 'PDF', fileSize: '0.8 MB', uploaded: 'Today' },
+      { fileName: 'EmiratesID.pdf', fileType: 'PDF', fileSize: '0.5 MB', uploaded: 'Today' }
+    ],
+    comments: [
+      { by: "User 123", text: "Passport copy has been uploaded." },
+      { by: "Admin 123", text: "KYC verification has been successfully completed." }
+    ],
+    timeline: [
+      { title:'Application Submitted', by:'System', date:'Aug 10, 2025 09:00', state:'done' },
+      { title:'KYC Fulfilled', by:'User 456', date:'Aug 10, 2025 11:30', state:'current' },
+      { title:'Checker 1 Approval', by:'Supervisor 456', date:'Aug 13, 2025 12:00', state:'pending' },
+      { title:'Checker 2 Approval', by:'Supervisor 456', date:'Aug 13, 2025 14:00', state:'pending' },
+      { title:'Line Issued', by:'System', date:'Aug 13, 2025 16:00', state:'pending' },
+    ],
+    history: [
+      { title: 'Application Received', by: 'System', date: '9 August 2025', sub: '3 days ago' },
+      { title: 'KYC Fulfilled', by: 'User 123', date: '11 August 2025', sub: 'Today' },
+      { title: 'Limit Assignment', by: 'System', date: '11 August 2025', sub: 'Today' },
+      { title: 'First Approval', by: 'Admin 1234', date: '11 August 2025', sub: 'Today' }
+    ],
+    jobDetails: {
+      'Monthly Income': 'AED 20,000',
+      'Employee': 'ABCD Technology Inc.',
+      'Salary Account': 'AE07 0331 9876 5432 1098 765'
+    },
+    limits: {
+      'Requested Card Limit': 'AED 20,000',
+      'Provisional Limit': 'AED 15,000',
+      'Approved Limit': 'AED 15,000'
+    },
+    aecb: {
+      'Score': '750',
+      'AECB Band': 'A1',
+      'AECB Risk Rate': 'VR'
+    },
+    account: {
+      'Client Reference Number': 'EMP202127000333',
+      'CIF ID': '123456789',
+      'AWB Number': '12345678901',
+      'Generated IBAN': 'AE07 0331 1122 3344 5566 778'
+    },
+    personal: {
+      'First Name': 'Ali',
+      'Last Name': 'Veli',
+      'Middle Name': 'Ahmet',
+      'Nationality': 'Turkey',
+      'Gender': 'Male'
+    },
+    kycDetails: {
+      'EID Number': '784-1990-1234567-8',
+      'EID Expiry Date': '20.10.2030',
+      'Passport Number': 'E98765432',
+      'Passport Expiry': '15.05.2035',
+      'PO Box': '12345',
+      'Declined Reason': '—',
+      'Bank Declined Reason': '—',
+      'KYC Status Message': 'Documents verified and approved.'
+    },
+    kycDocuments: [
+      { title: 'EID Front', date: 'August 10, 2025 at 12:00 AM' },
+      { title: 'EID Back', date: 'August 10, 2025 at 12:00 AM' },
+      { title: 'Passport Copy', date: 'August 10, 2025 at 19:00 AM' }
+    ]
+  };
+
+  // === DATA FETCHING & RENDERING ===
+  function fetchApplicationData() {
+    return new Promise((resolve, reject) => {
+      // Gerçek bir uygulamada, burada canlı bir 'fetch' çağrısı yaparsınız:
+      // fetch('https://your-api.com/application/123').then(res => res.json()).then(resolve).catch(reject);
+      
+      // Ben bir bot olduğum için canlı bir API çağrısı yapamıyorum, bu yüzden simülasyon yapıyorum.
+      // 'isApiWorking' değişkeni `true` ise, başarılı bir API yanıtını temsil eden
+      // 'SUCCESS_DATA' nesnesini kullanarak işlemi tamamlıyorum.
+      
+      const apiResponseTime = isApiWorking ? 1500 : 3000; // API yanıt süresi (1.5s başarılı, 3s başarısız)
+      
+      setTimeout(() => {
+        if (isApiWorking) {
+          // Bu satır, gerçek bir uygulamada API'den dönen gerçek verinin kullanılacağı yerdir.
+          resolve(SUCCESS_DATA); 
+        } else {
+          reject('API call timed out or failed.');
+        }
+      }, apiResponseTime);
+    });
+  }
+  
+  function updateProfileCard(data) {
+    if (!data || !data.profile) return;
+
+    const profilePictureElement = document.getElementById('profile-picture');
+    if (profilePictureElement) {
+      profilePictureElement.style.backgroundImage = `url('${data.profile.profilePicture}')`;
+      profilePictureElement.style.backgroundSize = 'cover';
+      profilePictureElement.style.backgroundPosition = 'center';
+      profilePictureElement.style.backgroundRepeat = 'no-repeat';
+    }
+
+    const profileNameElement = document.getElementById('profile-name');
+    if (profileNameElement) {
+      profileNameElement.textContent = data.profile.name;
+    }
+
+    const applicationTimeElement = document.getElementById('application-time');
+    if (applicationTimeElement) {
+      applicationTimeElement.textContent = `Application Time — ${data.profile.applicationTime}`;
+    }
+
+    const statusBadgeElement = document.getElementById('status-badge');
+    if (statusBadgeElement) {
+      statusBadgeElement.innerHTML = `<span class="badge info">${data.profile.status}</span>`;
+    }
+  }
+
+  function renderKeyValueList(containerId, data) {
+    const container = document.getElementById(containerId);
+    if (!container || !data) return;
+
+    container.innerHTML = '';
+    for (const key in data) {
+        if (data.hasOwnProperty(key)) {
+            const kv = document.createElement('div');
+            kv.className = 'kv';
+            kv.innerHTML = `<div class="k">${key}</div><div>${data[key]}</div>`;
+            container.appendChild(kv);
+        }
+    }
+  }
+
+  function renderTable(tableId, data) {
+    const table = document.getElementById(tableId);
+    if (!table || !data) return;
+
+    table.innerHTML = '';
+    for (const key in data) {
+        if (data.hasOwnProperty(key)) {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${key}</td><td>${data[key]}</td>`;
+            table.appendChild(row);
+        }
+    }
+  }
+  
+  function renderTagsAndAttachments(data) {
+    if (!data) return;
+
+    const tagsBody = document.getElementById('tags-body');
+    if (tagsBody && data.tags) {
+      tagsBody.innerHTML = '';
+      data.tags.forEach(tag => {
+        const tagSpan = document.createElement('span');
+        tagSpan.className = 'tag';
+        tagSpan.textContent = tag;
+        tagsBody.appendChild(tagSpan);
+      });
+    }
+
+    const attachmentsBody = document.getElementById('attachments-body');
+    if (attachmentsBody && data.attachments) {
+      attachmentsBody.innerHTML = '';
+      data.attachments.forEach(attachment => {
+        const attachmentDiv = document.createElement('div');
+        attachmentDiv.className = 'row';
+        attachmentDiv.style.justifyContent = 'flex-start';
+        attachmentDiv.style.marginTop = '10px';
+        
+        attachmentDiv.innerHTML = `
+          <div style="display:flex; gap:10px; align-items:center">
+            <div style="width:38px;height:46px;border:1px solid var(--adcb-border-gray);border-radius:6px;display:grid;place-items:center;background:#fff;color:#64748B;font-weight:700">${attachment.fileType}</div>
+            <div>
+              <div style="font-weight:600">${attachment.fileName}</div>
+              <div class="sub">${attachment.uploaded} • ${attachment.fileSize}</div>
+            </div>
+          </div>
+        `;
+        attachmentsBody.appendChild(attachmentDiv);
+      });
+    }
+  }
+
+  function updateInfoCards(data) {
+    if (!data) return;
+
+    // Properties card
+    const propertiesBody = document.getElementById('properties-body');
+    if (propertiesBody) {
+      propertiesBody.innerHTML = '';
+      for (const key in data.properties) {
+        if (data.properties.hasOwnProperty(key)) {
+          const kv = document.createElement('div');
+          kv.className = 'kv';
+          kv.innerHTML = `<div class="k">${key.replace('_', ' ')}</div><div>${data.properties[key]}</div>`;
+          propertiesBody.appendChild(kv);
+        }
+      }
+    }
+
+    // Comments card
+    const commentsBody = document.getElementById('comments-body');
+    if (commentsBody) {
+      commentsBody.innerHTML = '';
+      data.comments.forEach(comment => {
+        const commentDiv = document.createElement('div');
+        commentDiv.innerHTML = `<div style="margin-bottom:10px"><div class="sub">${comment.by}</div>${comment.text}</div>`;
+        commentsBody.appendChild(commentDiv);
+      });
+    }
+
+    // New dynamic cards
+    renderKeyValueList('job-details-body', data.jobDetails);
+    renderKeyValueList('limits-body', data.limits);
+    renderKeyValueList('aecb-body', data.aecb);
+    renderTable('account-table', data.account);
+    renderTable('personal-table', data.personal);
+    renderTable('kyc-details-table', data.kycDetails);
+
+    // KYC Documents are a special key-value pair with a sub-text
+    const kycDocsBody = document.getElementById('kyc-docs-body');
+    if (kycDocsBody && data.kycDocuments) {
+      kycDocsBody.innerHTML = '';
+      data.kycDocuments.forEach(doc => {
+        const kv = document.createElement('div');
+        kv.className = 'kv';
+        kv.innerHTML = `<div class="k">${doc.title}</div><div class="sub">${doc.date}</div>`;
+        kycDocsBody.appendChild(kv);
+      });
+    }
+  }
+  
+  function renderHistory(historyData) {
+    const historyBody = document.getElementById('history-body');
+    if (!historyBody || !historyData) return;
+    
+    historyBody.innerHTML = '';
+    const historyContainer = document.createElement('div');
+    historyContainer.style.display = 'grid';
+    historyContainer.style.gap = '10px';
+    
+    historyData.forEach(item => {
+      const historyItem = document.createElement('div');
+      historyItem.innerHTML = `<strong>${item.title}</strong> — by <strong>${item.by}</strong> on <strong>${item.date}</strong> <span class="sub">• ${item.sub}</span>`;
+      historyContainer.appendChild(historyItem);
+    });
+    
+    historyBody.appendChild(historyContainer);
+  }
+
+  const STAGES = [
+    'AIP Pending','DE Success','Temp Limit Confirmed','Salary IBAN Collected','Final Offer','KYC Pending','KYC Fulfilled','Checker 1 Approval','Checker 2 Approval','Line Issued'
+  ];
+  const STAGE_TO_NODE = { 'AIP Pending':'A','DE Success':'DES','Temp Limit Confirmed':'B','Salary IBAN Collected':'C','Final Offer':'D','KYC Pending':'E','KYC Fulfilled':'F','Checker 1 Approval':'G','Checker 2 Approval':'H','Line Issued':'I' };
+  const FLOW_SRC = `graph LR
+    A[AIP Pending]
+    A -->|DE Reject| R1[DE Reject]
+    A --> DES[DE Success]
+    DES --> B[Temp Limit Confirmed]
+    B --> C[Salary IBAN Collected]
+    C --> D[Final Offer]
+    D -->|DE Reject| R2[DE Reject]
+    D --> E[KYC Pending]
+    E -->|Telemarketing / Extra Docs| T[Telemarketing]
+    T --> E
+    E -->|KYC Rejected| R3[Rejected]
+    E --> F[KYC Fulfilled]
+    F --> G[Checker 1 Approval]
+    G -->|Reject| R4[Rejected]
+    G -->|Ask Telemarketing| T
+    G --> H[Checker 2 Approval]
+    H -->|Reject| R5[Rejected]
+    H --> I[Line Issued]
+    classDef active fill:#fff7ed,stroke:#f59e0b,stroke-width:2px,color:#9a3412;`;
+
+  const nodeFromStage = s => STAGE_TO_NODE[s] || 'A';
+  const getCurrentStage = () => (document.getElementById('app')?.dataset?.stage) || 'AIP Pending';
+
+  function renderPills(current){
+    const holder = document.getElementById('stagePills'); holder.innerHTML='';
+    const idx = STAGES.indexOf(current);
+    STAGES.forEach((s,i)=>{
+      const pill=document.createElement('div');
+      pill.className='stage-pill'+(i<idx?' done':i===idx?' current':''); pill.textContent=s; holder.appendChild(pill);
+      if(i<STAGES.length-1){ const c=document.createElement('div'); c.className='connector'; holder.appendChild(c); }
+    });
+    document.getElementById('bar').style.width = (Math.max(0, idx)/(STAGES.length-1))*100 + '%';
+  }
+
+  function renderTimeline(timelineData){
+    const tl=document.getElementById('timeline'); tl.innerHTML='';
+    const items = timelineData;
+    items.forEach(ev=>{
+      const row=document.createElement('div'); row.className='t-item '+(ev.state||'');
+      row.innerHTML = '<div class="t-dot"></div><div class="t-title">'+ev.title+' <span class="datepill">'+ev.date+'</span></div><div class="t-meta">by <strong>'+ev.by+'</strong></div>';
+      tl.appendChild(row);
+    });
+  }
+
+  function renderFlow(current){
+    const node=nodeFromStage(current);
+    const src = FLOW_SRC + '\nclass '+node+' active;';
+    mermaid.initialize({ startOnLoad:false, theme:'default' });
+    mermaid.render('flowSvg', src).then(({svg})=>{ document.getElementById('mmd').innerHTML = svg; });
+  }
+
+  function renderStatus(data){
+    const cur = data?.profile?.status || getCurrentStage();
+    renderPills(cur);
+    renderTimeline(data?.timeline);
+    renderFlow(cur);
+  }
+
+  async function init() {
+    const appContainer = document.getElementById('app');
+    const loadingSpinner = document.getElementById('loading-spinner');
+
+    appContainer.style.display = 'none';
+    loadingSpinner.style.display = 'flex';
+
+    try {
+      const apiData = await fetchApplicationData();
+      console.log('API data fetched successfully. Updating all cards.');
+      // Gerçek bir uygulamada, burada `apiData` değişkenini kullanırdınız.
+      updateProfileCard(apiData);
+      updateInfoCards(apiData);
+      renderTagsAndAttachments(apiData);
+      renderStatus(apiData);
+      renderHistory(apiData.history);
+    } catch (error) {
+      console.error('API call failed or timed out. Using default data:', error);
+      updateProfileCard(DEFAULT_DATA);
+      updateInfoCards(DEFAULT_DATA);
+      renderTagsAndAttachments(DEFAULT_DATA);
+      renderStatus(DEFAULT_DATA);
+      renderHistory(DEFAULT_DATA.history);
+    } finally {
+      loadingSpinner.style.display = 'none';
+      appContainer.style.display = 'flex';
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ADCB Dashboard</title>
+<!-- ADCB Teması için Google Fonts - Poppins daha profesyonel bir görünüm sağlar -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Chart.js for data visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    /* ADCB Renk Paleti */
+    :root {
+      --adcb-red: #e60000;
+      --adcb-black: #000000;
+      --adcb-white: #ffffff;
+      --adcb-light-gray: #f5f5f5;
+      --adcb-dark-gray: #4d4d4d;
+      --adcb-border-gray: #dddddd;
+      --adcb-success: #28a745;
+      --adcb-warning: #ffc107;
+      --adcb-danger: #dc3545;
+      --adcb-info: #17a2b8;
+    }
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--adcb-light-gray);
+      color: var(--adcb-dark-gray);
+      margin: 0;
+      display: flex;
+    }
+    .sidebar {
+      width: 250px;
+      background: var(--adcb-white);
+      height: 100vh;
+      border-right: 1px solid var(--adcb-border-gray);
+      padding-top: 24px;
+      flex-shrink: 0;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+    }
+    .sidebar .logo {
+      padding: 0 24px 24px;
+      /* Mevcut yazı stili yerine SVG kullanıldı */
+      border-bottom: 1px solid var(--adcb-border-gray);
+      margin-bottom: 24px;
+    }
+    /* SVG için yeni stil */
+    .sidebar .logo svg {
+      height: 24px;
+    }
+    .sidebar nav a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      color: var(--adcb-dark-gray);
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .sidebar nav a:hover {
+      background: #f0f0f0;
+      color: var(--adcb-red);
+    }
+    .sidebar nav a.active {
+      background: var(--adcb-light-gray);
+      font-weight: 700;
+      border-left: 4px solid var(--adcb-red);
+      padding-left: 20px;
+      color: var(--adcb-red);
+    }
+    .main-content {
+      flex-grow: 1;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+    }
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .dashboard-header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--adcb-black);
+    }
+    .alert {
+      background: #fff3cd;
+      border: 1px solid var(--adcb-warning);
+      color: var(--adcb-dark-gray);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .kpi {
+      background: var(--adcb-white);
+      border: 1px solid var(--adcb-border-gray);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .kpi .label {
+      font-size: 13px;
+      color: var(--adcb-dark-gray);
+      opacity: 0.8;
+    }
+    .kpi .val {
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 4px;
+      color: var(--adcb-black);
+    }
+    .section {
+      background: var(--adcb-white);
+      border: 1px solid var(--adcb-border-gray);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .section h2 {
+      margin: 0 0 16px;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--adcb-black);
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .table th, .table td {
+      padding: 12px;
+      border-top: 1px solid var(--adcb-border-gray);
+      text-align: left;
+    }
+    .table th {
+      background: #f9f9f9;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--adcb-dark-gray);
+      text-transform: uppercase;
+    }
+    .btn {
+      color: var(--adcb-white);
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: opacity 0.2s ease;
+    }
+    .btn:hover {
+      opacity: 0.8;
+    }
+    .btn-approve {
+      background: var(--adcb-success);
+    }
+    .btn-reject {
+      background: var(--adcb-danger);
+    }
+    .btn-request {
+      background: var(--adcb-red);
+    }
+    .chart-container {
+      display:grid;
+      grid-template-columns:1fr;
+      gap:24px;
+    }
+    @media (min-width: 768px) {
+      .chart-container {
+        grid-template-columns:1fr 1fr 1fr;
+      }
+    }
+  
+  /* Force-collapse extra rows */
+  .collapsed-row { display: none !important; }
+
+  /* Attribute-driven collapse to avoid JS/CSS conflicts */
+  #task-collapsible[data-collapsed="true"] tbody tr:nth-child(n+4) { display: none !important; }
+
+  #task-collapsible[data-collapsed="true"] tbody tr:nth-child(n+4) { display: none !important; }
+</style>
+<style>
+.badge { display:inline-block; padding:4px 8px; border-radius:12px; font-size:12px; font-weight:600; }
+.badge-ok { background:#e9f7ef; color:#1e7e34; }
+.badge-warn { background:#fff3cd; color:#856404; }
+.badge-danger { background:#f8d7da; color:#721c24; }
+.cell-sub { font-size:11px; opacity:.7; margin-top:2px; }
+.table-controls { display:flex; justify-content:flex-end; margin:8px 0 12px; }
+.controls-right { display:flex; align-items:center; gap:10px; }
+.btn.toggle-show { background:#ffffff; color:#333; border:1px solid #ccc; border-radius:12px; padding:6px 10px; cursor:pointer; }
+.collapsible { overflow:hidden; transition:max-height .25s ease; }
+.global-filters { margin: 10px 0 16px; background:#ffffff; border:1px solid #e5e7eb; border-radius:12px; padding:10px 12px; width:100%; box-sizing:border-box; }
+.global-filters .filters-inner { display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; }
+.quick-presets { display:flex; flex-wrap:wrap; gap:6px; }
+.quick-presets .preset { padding:6px 10px; border:1px solid #ccc; border-radius:999px; background:#fff; cursor:pointer; font-size:12px; }
+.quick-presets .preset.active { background:#efefef; }
+.manual-range label { font-size:12px; margin-right:6px; display:inline-flex; align-items:center; gap:6px; }
+.manual-range input[type="date"] { padding:6px 8px; border:1px solid #ddd; border-radius:8px; }
+.btn.btn-apply-range, .btn.btn-clear-range { background:#f7f7f7; color:#333; border:1px solid #ccc; border-radius:8px; padding:6px 10px; cursor:pointer; }
+</style></head>
+<body>
+<aside class="sidebar">
+<div class="logo">
+<!-- ADCB yazısını SVG logosu ile değiştirdik -->
+<div class="logo">
+<img alt="ADCB Logo" src="logo.svg" style="height: 24px;"/>
+</div>
+</div>
+<nav>
+<a class="nav-link active" href="dashboard.html">
+<span>📊</span> Dashboard
+      </a>
+<a class="nav-link" href="applications.html">
+<span>🗂</span> Applications
+      </a>
+<a class="nav-link" href="customers.html">
+<span>👥</span> Customers
+      </a>
+<a class="nav-link" href="tasks.html">
+<span>✅</span> Tasks
+      </a>
+<a class="nav-link" href="reports.html">
+<span>📈</span> Reports
+      </a>
+<a class="nav-link" href="settings.html">
+<span>⚙️</span> Settings
+      </a>
+<a class="nav-link" href="logout.html">
+<span>🚪</span> Logout
+      </a>
+</nav>
+</aside>
+<div class="main-content">
+<div class="dashboard-header">
+<h1>Empay Credit Card Dashboard</h1>
+</div>
+<div class="alert">
+<strong>⚠ SLA Warning:</strong> 3 applications will breach SLA in less than 4 hours.
+      Please review: <strong>APP-10241</strong>, <strong>APP-10237</strong>, <strong>APP-10236</strong>.
+    </div><div class="global-filters">
+<div class="filters-inner">
+<div class="quick-presets"><button class="preset preset-30d" type="button">Last 30 days</button><button class="preset preset-7d" type="button">Last 7 days</button><button class="preset preset-today" type="button">Today</button></div>
+<div class="manual-range">
+<label>From <input id="dateFrom" type="date"/></label>
+<label>To <input id="dateTo" type="date"/></label>
+<button class="btn btn-apply-range" type="button">Apply</button>
+<button class="btn btn-clear-range" type="button">Clear</button>
+</div>
+</div>
+</div>
+<div class="kpis">
+<div class="kpi"><div class="label">New Applications (Today)</div><div class="val">38</div></div>
+<div class="kpi"><div class="label">My Tasks</div><div class="val">12</div></div>
+<div class="kpi"><div class="label">SLA Breaches</div><div class="val" style="color:var(--adcb-danger)">5</div></div>
+<div class="kpi"><div class="label">Approval Rate</div><div class="val">67%</div></div>
+<div class="kpi"><div class="label">Avg. Review Time</div><div class="val">9.4h</div></div>
+</div>
+<div class="section">
+<h2>My Tasks</h2>
+<div class="table-controls"><div class="controls-right"><span class="showing">Showing 3 of 12</span><button class="btn toggle-show" type="button">Show all</button></div></div><div class="collapsible" data-collapsed="true" id="task-collapsible"><table class="table" id="task-table">
+<thead>
+<tr><th>Application ID</th><th>Customer</th><th>Nationality</th><th>Stage</th><th>AECB</th><th>SLA</th><th>Last Update</th><th>Action</th></tr>
+</thead>
+<tbody></tbody>
+</table></div>
+</div>
+<div class="section">
+<h2>Recent Activity</h2>
+<ul style="margin:0;padding-left:20px;line-height:1.6">
+<li><strong style="color:var(--adcb-success)">✅</strong> APP-10221 – Omar Jaber approved</li>
+<li><strong style="color:var(--adcb-info)">📤</strong> APP-10219 – Documents uploaded for Rami Falasi </li>
+<li><strong style="color:var(--adcb-danger)">❌</strong> APP-10215 – Anil Varma rejected</li>
+</ul>
+</div>
+<div class="section">
+<h2>Application Trends</h2>
+<div class="chart-container">
+<div><h3 style="font-size:14px;color:var(--adcb-black)">Applications by Stage</h3><canvas height="180" id="stageChart"></canvas></div>
+<div><h3 style="font-size:14px;color:var(--adcb-black)">Approval Rate (Last 7 Days)</h3><canvas height="180" id="approvalChart"></canvas></div>
+<div><h3 style="font-size:14px;color:var(--adcb-black)">SLA Breaches by Stage</h3><canvas height="180" id="slaChart"></canvas></div>
+</div>
+</div>
+</div>
+<script>
+(function() {
+  'use strict';
+
+  var MOCK = [{"id": "APP-10245", "customer": "Ahmed Al Habib", "nationality": "UAE", "stage": "AIP Pending", "aecb": 701, "updatedAt": "2025-08-13T01:55:06.110629+04:00", "slaDeadline": "2025-08-14T02:15:04.910629+04:00", "approved": false, "reviewHours": 10.3}, {"id": "APP-10246", "customer": "Sara Khan", "nationality": "IND", "stage": "DE Success", "aecb": 680, "updatedAt": "2025-08-12T18:55:06.110629+04:00", "slaDeadline": "2025-08-13T12:55:06.110629+04:00", "approved": false, "reviewHours": 9.2}, {"id": "APP-10247", "customer": "Omar Farouk", "nationality": "EGY", "stage": "Temp Limit Confirmed", "aecb": 590, "updatedAt": "2025-08-13T12:55:06.110629+04:00", "slaDeadline": "2025-08-13T20:55:06.110629+04:00", "approved": false, "reviewHours": 9.2}, {"id": "APP-10248", "customer": "Liam Carter", "nationality": "GBR", "stage": "Salary IBAN Collected", "aecb": 720, "updatedAt": "2025-08-12T08:55:06.110629+04:00", "slaDeadline": "2025-08-14T08:55:06.110629+04:00", "approved": false, "reviewHours": 9.2}, {"id": "APP-10249", "customer": "Priya Patel", "nationality": "IND", "stage": "Final Offer", "aecb": 705, "updatedAt": "2025-08-13T08:55:06.110629+04:00", "slaDeadline": "2025-08-13T18:55:06.110629+04:00", "approved": false, "reviewHours": 9.2}, {"id": "APP-10250", "customer": "Wei Zhang", "nationality": "CHN", "stage": "KYC Pending", "aecb": 650, "updatedAt": "2025-08-11T12:55:06.110629+04:00", "slaDeadline": "2025-08-13T08:55:06.110629+04:00", "approved": false, "reviewHours": 12.1}, {"id": "APP-10251", "customer": "Maria Garcia", "nationality": "USA", "stage": "KYC Fulfilled", "aecb": 710, "updatedAt": "2025-08-13T04:55:06.110629+04:00", "slaDeadline": "2025-08-14T04:55:06.110629+04:00", "approved": false, "reviewHours": 9.2}, {"id": "APP-10252", "customer": "Deniz Yilmaz", "nationality": "TUR", "stage": "Checker 1 Approval", "aecb": 730, "updatedAt": "2025-08-10T06:55:06.110629+04:00", "slaDeadline": "2025-08-13T02:55:06.110629+04:00", "approved": false, "reviewHours": 12.1}, {"id": "APP-10253", "customer": "John Smith", "nationality": "USA", "stage": "Checker 2 Approval", "aecb": 760, "updatedAt": "2025-08-13T10:55:06.110629+04:00", "slaDeadline": "2025-08-14T10:55:06.110629+04:00", "approved": false, "reviewHours": 9.2}, {"id": "APP-10254", "customer": "Aisha Khan", "nationality": "PAK", "stage": "Line Issued", "aecb": 780, "updatedAt": "2025-08-13T02:55:06.110629+04:00", "slaDeadline": "2025-08-13T16:55:06.110629+04:00", "approved": true, "reviewHours": 10.3}, {"id": "APP-10255", "customer": "Mert Kaya", "nationality": "TUR", "stage": "KYC Pending", "aecb": 635, "updatedAt": "2025-08-13T11:55:06.110629+04:00", "slaDeadline": "2025-08-13T19:55:06.110629+04:00", "approved": false, "reviewHours": 9.2}, {"id": "APP-10256", "customer": "Wei Li", "nationality": "CHN", "stage": "AIP Pending", "aecb": 600, "updatedAt": "2025-08-05T06:55:06.110629+04:00", "slaDeadline": "2025-08-12T14:55:06.110629+04:00", "approved": false, "reviewHours": 9.2}];
+  var STAGES = ["AIP Pending", "DE Success", "Temp Limit Confirmed", "Salary IBAN Collected", "Final Offer", "KYC Pending", "KYC Fulfilled", "Checker 1 Approval", "Checker 2 Approval", "Line Issued"];
+
+  var state = { start: null, end: null, expanded: false };
+
+  var table = document.getElementById('task-table');
+  var tbody = table ? table.querySelector('tbody') : null;
+  var wrap = document.getElementById('task-collapsible');
+  var showingEl = document.querySelector('.table-controls .showing');
+  var toggleBtn = document.querySelector('.table-controls .toggle-show');
+
+  function withinRange(iso) {
+    if (!iso) return true;
+    var t = new Date(iso).getTime();
+    if (state.start && t < state.start.getTime()) return false;
+    if (state.end && t > state.end.getTime()) return false;
+    return true;
+  }
+  function relTime(iso) {
+    if (!iso) return '—';
+    var d = new Date(iso).getTime();
+    var diff = Date.now() - d;
+    var absM = Math.round(Math.abs(diff)/60000);
+    if (absM < 60) return diff>=0 ? (absM + 'm ago') : ('in ' + absM + 'm');
+    var absH = Math.round(absM/60);
+    if (absH < 24) return diff>=0 ? (absH + 'h ago') : ('in ' + absH + 'h');
+    var absD = Math.round(absH/24);
+    return diff>=0 ? (absD + 'd ago') : ('in ' + absD + 'd');
+  }
+  function fmtHM(ms) {
+    var m = Math.max(0, Math.round(ms/60000));
+    var h = Math.floor(m/60), r = m%60;
+    return h>0 ? (h + 'h ' + r + 'm') : (r + 'm');
+  }
+  function fmtAbsShort(iso) {
+    if (!iso) return '—';
+    var d = new Date(iso);
+    var opts = { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' };
+    return d.toLocaleString(undefined, opts).replace(',', '');
+  }
+  function computeSLA(deadlineISO) {
+    var diff = new Date(deadlineISO).getTime() - Date.now();
+    if (diff < 0) return { cls: 'badge-danger', line: 'Breached by ' + fmtHM(-diff), sub: 'Was due at ' + fmtAbsShort(deadlineISO) };
+    if (diff <= 8*3600000) return { cls: 'badge-warn', line: 'Due in ' + fmtHM(diff), sub: 'Due at ' + fmtAbsShort(deadlineISO) };
+    return { cls: 'badge-ok', line: 'Due in ' + fmtHM(diff), sub: 'Due at ' + fmtAbsShort(deadlineISO) };
+  }
+
+  function renderRows(list) {
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    for (var i=0;i<list.length;i++) {
+      var t = list[i];
+      var tr = document.createElement('tr');
+      tr.dataset.id = t.id; tr.dataset.stage = t.stage; tr.dataset.slaDeadline = t.slaDeadline; tr.dataset.updatedAt = t.updatedAt;
+      tr.innerHTML = ''
+        + '<td><a href="#" style="color:var(--adcb-info);text-decoration:underline">' + t.id + '</a></td>'
+        + '<td><a href="detail.html" style="color:var(--adcb-info);text-decoration:underline">' + t.customer + '</a></td>'
+        + '<td>' + t.nationality + '</td>'
+        + '<td class="stage"></td>'
+        + '<td>' + t.aecb + '</td>'
+        + '<td class="sla"></td>'
+        + '<td class="updated"></td>'
+        + '<td><button class="btn btn-approve">Approve</button><button class="btn btn-reject" style="margin-left: 8px;">Reject</button></td>';
+      var idx = Math.max(0, STAGES.indexOf(t.stage));
+      tr.querySelector('.stage').innerHTML = t.stage + '<div class="cell-sub">' + (idx+1) + '/' + STAGES.length + '</div>';
+      var sla = computeSLA(t.slaDeadline);
+      tr.querySelector('.sla').innerHTML = '<span class="badge ' + sla.cls + '">SLA: ' + sla.line + '</span><div class="cell-sub">' + sla.sub + '</div>';
+      var upd = tr.querySelector('.updated'); upd.textContent = 'Updated ' + relTime(t.updatedAt); upd.title = new Date(t.updatedAt).toLocaleString();
+      tbody.appendChild(tr);
+    }
+  }
+  function renderKPIs(list) {
+    var now = new Date();
+    var startOfToday = new Date(now); startOfToday.setHours(0,0,0,0);
+    var endOfToday = new Date(now); endOfToday.setHours(23,59,59,999);
+    var inToday=0, breaches=0, approvals=0, totalH=0;
+    for (var i=0;i<list.length;i++) {
+      var t = list[i]; var ts = new Date(t.updatedAt).getTime();
+      if (ts>=startOfToday.getTime() && ts<=endOfToday.getTime()) inToday++;
+      if (new Date(t.slaDeadline).getTime() < Date.now()) breaches++;
+      if (t.approved) approvals++;
+      totalH += (t.reviewHours||0);
+    }
+    var approvalRate = list.length ? Math.round((approvals/list.length)*100) : 0;
+    var avgReview = list.length ? (totalH/list.length) : 0;
+    var kpis = document.querySelectorAll('.kpi');
+    for (var j=0;j<kpis.length;j++) {
+      var k = kpis[j];
+      var lblEl = k.querySelector('.label') || k.querySelector('.title');
+      var valEl = k.querySelector('.val') || k.querySelector('.value');
+      if (!lblEl || !valEl) continue;
+      var lbl = (lblEl.textContent||'').trim();
+      if (lbl === 'New Applications (Today)') valEl.textContent = inToday;
+      if (lbl === 'My Tasks') valEl.textContent = list.length;
+      if (lbl === 'SLA Breaches') valEl.textContent = breaches;
+      if (lbl === 'Approval Rate') valEl.textContent = approvalRate + '%';
+      if (lbl === 'Avg. Review Time') valEl.textContent = avgReview.toFixed(1) + 'h';
+    }
+  }
+  function ensureCharts() {
+    if (!window.Chart) return;
+    function destroy(canvasId){
+      var c = document.getElementById(canvasId);
+      if (!c) return null;
+      try { if (Chart.getChart) { var inst = Chart.getChart(c); if (inst && inst.destroy) inst.destroy(); } } catch(e){}
+      return c.getContext ? c.getContext('2d') : null;
+    }
+    return {
+      stage: destroy('stageChart'),
+      approval: destroy('approvalChart'),
+      sla: destroy('slaChart')
+    };
+  }
+  function renderCharts(list) {
+    if (!window.Chart) return;
+    var ctx = ensureCharts();
+    if (ctx.stage) {
+      var counts = []; for (var i=0;i<STAGES.length;i++) counts.push(list.filter(function(t){return t.stage===STAGES[i];}).length);
+      new Chart(ctx.stage, { type:'bar', data:{ labels:STAGES, datasets:[{ label:'Applications', data:counts }] }, options:{ plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true } } } });
+    }
+    if (ctx.approval) {
+      var days = []; for (var i=0;i<14;i++){ var d=new Date(); d.setDate(d.getDate()-(13-i)); d.setHours(0,0,0,0); days.push(d); }
+      var labels = days.map(function(d){ return (d.getMonth()+1)+'/'+d.getDate(); });
+      var series = days.map(function(d){ return list.filter(function(t){ var du = new Date(t.updatedAt); return t.approved && du.toDateString()===d.toDateString(); }).length; });
+      new Chart(ctx.approval, { type:'line', data:{ labels:labels, datasets:[{ label:'Approvals', data:series }] }, options:{ plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true } } } });
+    }
+    if (ctx.sla) {
+      var ok=0,warn=0,br=0;
+      for (var i=0;i<list.length;i++){ var diff=new Date(list[i].slaDeadline).getTime()-Date.now(); if (diff<0) br++; else if (diff<=8*3600000) warn++; else ok++; }
+      new Chart(ctx.sla, { type:'bar', data:{ labels:['OK','Warn (<8h)','Breached'], datasets:[{ label:'SLA', data:[ok,warn,br] }] }, options:{ plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true } } } });
+    }
+  }
+
+  function setCollapsed(flag) {
+    if (!wrap) return;
+    wrap.setAttribute('data-collapsed', flag ? 'true' : 'false');
+    var total = tbody ? tbody.querySelectorAll('tr').length : 0;
+    var visible = flag ? Math.min(3, total) : total;
+    if (showingEl) showingEl.textContent = 'Showing ' + visible + ' of ' + total;
+  }
+
+  function installObserver() {
+    if (!tbody) return;
+    var obs = new MutationObserver(function(){ setCollapsed(!state.expanded); });
+    obs.observe(tbody, { childList:true });
+  }
+
+  function bindFilters() {
+    function q(sel){ return document.querySelector(sel); }
+    var btn7d   = q('.preset-7d');
+    var btn30d  = q('.preset-30d');
+    var btnToday= q('.preset-today');
+    var applyBtn= q('.btn.btn-apply-range');
+    var clearBtn= q('.btn.btn-clear-range');
+    function clearActive(){ var arr=document.querySelectorAll('.quick-presets .preset'); for (var i=0;i<arr.length;i++) arr[i].classList.remove('active'); }
+    function endOfToday(){ var d=new Date(); d.setHours(23,59,59,999); return d; }
+    function startOfToday(){ var d=new Date(); d.setHours(0,0,0,0); return d; }
+
+    if (btn30d) btn30d.addEventListener('click', function(){ clearActive(); btn30d.classList.add('active'); var e=endOfToday(); var s=new Date(e); s.setDate(e.getDate()-29); s.setHours(0,0,0,0); applyRange(s,e); });
+    if (btn7d) btn7d.addEventListener('click', function(){ clearActive(); btn7d.classList.add('active'); var e=endOfToday(); var s=new Date(e); s.setDate(e.getDate()-6); s.setHours(0,0,0,0); applyRange(s,e); });
+    if (btnToday) btnToday.addEventListener('click', function(){ clearActive(); btnToday.classList.add('active'); var s=startOfToday(), e=endOfToday(); applyRange(s,e); });
+    if (applyBtn) applyBtn.addEventListener('click', function(){ var f=document.getElementById('dateFrom'); var t=document.getElementById('dateTo'); var s=f&&f.value? new Date(f.value+'T00:00:00') : null; var e=t&&t.value? new Date(t.value+'T23:59:59.999') : null; clearActive(); applyRange(s,e); });
+    if (clearBtn) clearBtn.addEventListener('click', function(){ var f=document.getElementById('dateFrom'); var t=document.getElementById('dateTo'); if (f) f.value=''; if (t) t.value=''; clearActive(); applyRange(null,null); });
+  }
+
+  function applyRange(start, end) {
+    state.start = start || null; state.end = end || null; state.expanded = false;
+    if (toggleBtn) toggleBtn.textContent = 'Show all';
+    var list = MOCK.filter(function(t){ return withinRange(t.updatedAt); });
+    renderRows(list);
+    renderKPIs(list);
+    renderCharts(list);
+    setCollapsed(true);
+  }
+
+  if (toggleBtn) toggleBtn.addEventListener('click', function(){ 
+    state.expanded = !state.expanded;
+    toggleBtn.textContent = state.expanded ? 'Show less' : 'Show all';
+    setCollapsed(!state.expanded);
+  });
+
+  bindFilters();
+  installObserver();
+  (function(){ var e=new Date(); e.setHours(23,59,59,999); var s=new Date(e); s.setDate(e.getDate()-29); s.setHours(0,0,0,0); applyRange(s,e); })();
+})();
+</script></body>
+</html>

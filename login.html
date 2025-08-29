@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ADCB • Bankers Portal – Login</title>
+<meta name="color-scheme" content="light dark">
+<style>
+  :root{
+    --adcb-red:#E1251B; --bg:#ffffff; --card:#ffffff; --border:#e5e7eb;
+    --text:#6c94ea; --muted:#6b7280; --ok:#10b981; --err:#ef4444;
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0; font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--text); background:radial-gradient(1200px 600px at 10% -10%, #ffe7e5 0, transparent 50%), var(--bg);}
+  .topbar{max-width:980px;margin:24px auto 0; padding:0 16px; display:flex; align-items:center; gap:10px; color:#111}
+  .logo{height:22px; display:block}
+  .brand{font-weight:800; letter-spacing:.4px}
+  .wrap{min-height:calc(100% - 64px); display:grid; place-items:center; padding:20px}
+  .card{width:100%; max-width:420px; background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:0 14px 30px rgba(0,0,0,.06); overflow:hidden}
+  .side{height:8px; background:var(--adcb-red)}
+  .content{padding:22px}
+  h1{font-size:1.25rem; margin:0 0 6px 0}
+  .muted{color:var(--muted)}
+  .field{margin:12px 0}
+  label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
+  .input{width:100%; height:40px; border:1px solid var(--border); border-radius:10px; padding:0 12px; font:inherit; background:#fff}
+  .input:focus{outline:2px solid #fde2e0; border-color:var(--adcb-red)}
+  .row{display:flex; align-items:center; justify-content:space-between; gap:8px}
+  .hint{font-size:12px; color:var(--muted)}
+  .btn{height:40px; border-radius:10px; border:1px solid var(--border); background:#fff; cursor:pointer; font-weight:600}
+  .btn.primary{background:var(--adcb-red); border-color:var(--adcb-red); color:#fff}
+  .btn.ghost{background:#fff}
+  .btn.block{width:100%}
+  .btn:disabled{opacity:.6; cursor:not-allowed}
+  .err{color:var(--err); font-size:12px; margin-top:6px; display:none}
+  .footer{max-width:420px; margin:10px auto; text-align:center; color:var(--muted); font-size:12px}
+  .options{display:grid; grid-template-columns:1fr; gap:8px; margin-top:12px}
+  .checkbox{display:flex; align-items:center; gap:8px; font-size:12px}
+  .link{color:var(--adcb-red); text-decoration:none}
+  .link:hover{text-decoration:underline}
+  .divider{display:flex; align-items:center; gap:12px; color:#9ca3af; font-size:12px; margin:10px 0}
+  .divider:before,.divider:after{content:""; height:1px; background:var(--border); flex:1}
+  .pwd{position:relative}
+  .toggle{position:absolute; top:50%; right:10px; transform:translateY(-50%); font-size:12px; color:#6b7280; cursor:pointer}
+  .toast{position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#111; color:#fff; padding:10px 14px; border-radius:10px; font-size:13px; display:none}
+  .policy{font-size:11px; color:#6b7280; margin-top:8px}
+  @media (prefers-color-scheme: dark){
+    body{background:#0b0c10; color:#e5e7eb}
+    .card{background:#12141a; border-color:#1f2937}
+    .input{background:#0f1117; color:#e5e7eb; border-color:#1f2937}
+    .btn.ghost{background:#0f1117; color:#e5e7eb}
+    .footer{color:#9ca3af}
+    .topbar{color:#e5e7eb}
+  }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <img src="logo.svg" alt="ADCB" class="logo"/>
+    <div class="brand">Bankers Portal</div>
+  </div>
+
+  <div class="wrap">
+    <div class="card" role="dialog" aria-labelledby="title">
+      <div class="side"></div>
+      <div class="content">
+        <h1 id="title">Sign in</h1>
+        <div class="muted">CoBrand Cards Backoffice</div>
+
+        <form id="form" novalidate>
+          <div class="field">
+            <label for="id">Email or Employee ID</label>
+            <input id="id" class="input" autocomplete="username" placeholder="e.g., j.smith@adcb.com or E12345" required />
+            <div id="err-id" class="err">Enter a valid email or employee ID.</div>
+          </div>
+
+          <div class="field pwd">
+            <label for="pwd">Password</label>
+            <input id="pwd" class="input" type="password" autocomplete="current-password" required minlength="6" />
+            <span class="toggle" id="toggle">Show</span>
+            <div id="err-pwd" class="err">Password must be at least 6 characters.</div>
+          </div>
+
+          <div class="row" style="margin:8px 0 12px 0">
+            <label class="checkbox"><input type="checkbox" id="remember"> Remember me</label>
+            <a class="link" href="#" onclick="forgot()">Forgot password?</a>
+          </div>
+
+          <button id="submit" class="btn primary block" type="submit">Sign in</button>
+
+          <div class="divider">or</div>
+
+          <button class="btn ghost block" type="button" onclick="sso()">Continue with SSO</button>
+          <div class="options">
+            <button class="btn ghost block" type="button" onclick="otp()">Get one-time code via email</button>
+          </div>
+
+          <div class="policy">By signing in you agree to ADCB internal policies. Usage is monitored.</div>
+        </form>
+      </div>
+    </div>
+    <div class="footer">© ADCB – Internal Use Only</div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+
+<script>
+  const idEl = document.getElementById('id');
+  const pwdEl = document.getElementById('pwd');
+  const errId = document.getElementById('err-id');
+  const errPwd = document.getElementById('err-pwd');
+  const toggle = document.getElementById('toggle');
+  const submitBtn = document.getElementById('submit');
+  const toast = document.getElementById('toast');
+
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.style.display='block';
+    setTimeout(()=>toast.style.display='none', 2500);
+  }
+
+  toggle.addEventListener('click', ()=>{
+    const isPass = pwdEl.getAttribute('type') === 'password';
+    pwdEl.setAttribute('type', isPass ? 'text' : 'password');
+    toggle.textContent = isPass ? 'Hide' : 'Show';
+  });
+
+  function validEmailOrEmp(v){
+    if(!v) return false;
+    const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i.test(v);
+    const emp = /^E\d{4,7}$/i.test(v);
+    return email || emp;
+  }
+
+  document.getElementById('form').addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const idOk = validEmailOrEmp(idEl.value.trim());
+    const pwdOk = (pwdEl.value||'').length >= 6;
+
+    errId.style.display = idOk ? 'none' : 'block';
+    errPwd.style.display = pwdOk ? 'none' : 'block';
+
+    if(!(idOk && pwdOk)) return;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing in…';
+
+    setTimeout(()=>{
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign in';
+      showToast('Signed in (demo)');
+      window.location.href = 'dashboard.html';
+    }, 1000);
+  });
+</script>
+
+</body>
+</html>

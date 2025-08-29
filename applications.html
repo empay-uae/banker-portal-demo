@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Applications • ADCB (Demo, Fixed)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ADCB Renk Paleti */
+    :root {
+      --adcb-red: #e60000;
+      --adcb-black: #000000;
+      --adcb-white: #ffffff;
+      --adcb-light-gray: #f5f5f5;
+      --adcb-dark-gray: #4d4d4d;
+      --adcb-border-gray: #dddddd;
+      --adcb-success: #28a745;
+      --adcb-warning: #ffc107;
+      --adcb-danger: #dc3545;
+      --adcb-info: #17a2b8;
+    }
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--adcb-light-gray);
+      color: var(--adcb-dark-gray);
+      margin: 0;
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 250px;
+      background: var(--adcb-white);
+      height: 100vh;
+      border-right: 1px solid var(--adcb-border-gray);
+      padding-top: 24px;
+      flex-shrink: 0;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+    }
+    .sidebar .logo {
+      padding: 0 24px 24px;
+      border-bottom: 1px solid var(--adcb-border-gray);
+      margin-bottom: 24px;
+    }
+    .sidebar .logo img { height: 24px; }
+    .sidebar nav a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      color: var(--adcb-dark-gray);
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .sidebar nav a:hover { background: #f0f0f0; color: var(--adcb-red); }
+    .sidebar nav a.active {
+      background: var(--adcb-light-gray);
+      font-weight: 700;
+      border-left: 4px solid var(--adcb-red);
+      padding-left: 20px;
+      color: var(--adcb-red);
+    }
+
+    .main-content {
+      flex-grow: 1;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .page-header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--adcb-black);
+    }
+    .btn {
+      background: var(--adcb-red);
+      color: var(--adcb-white);
+      padding: 8px 12px;
+      border: 0;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      white-space: nowrap;
+    }
+    .btn:hover { background-color: #c01e16; }
+    .btn:active { transform: translateY(1px); }
+    .btn.secondary { background: #e9ecef; color: var(--adcb-dark-gray); }
+    .btn.ghost { background: transparent; color: var(--adcb-red); border: 1px solid var(--adcb-border-gray); }
+
+    .filters {
+      background: var(--adcb-white);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      padding: 16px;
+      display: grid;
+      gap: 16px;
+    }
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .row input, .row select {
+      height: 40px;
+      padding: 0 12px;
+      border-radius: 4px;
+      border: 1px solid var(--adcb-border-gray);
+      font-size: 14px;
+      flex: 1;
+      min-width: 180px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .row input:focus, .row select:focus {
+      outline: none;
+      border-color: var(--adcb-red);
+      box-shadow: 0 0 0 2px rgba(230, 0, 0, 0.2);
+    }
+
+    .table-card {
+      background: var(--adcb-white);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: #fafafa;
+      color: var(--adcb-dark-gray);
+      font-weight: 600;
+      /* text-transform: uppercase;  REMOVED to avoid Turkish İ issue */
+      letter-spacing: 0.2px;
+      padding: 12px;
+      font-size: 13px;
+      text-align: left;
+    }
+    td {
+      padding: 12px 16px;
+      border-top: 1px solid var(--adcb-border-gray);
+      font-size: 14px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    tr:nth-child(even) { background: #fafafa; }
+    a.link {
+      color: var(--adcb-info);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+    a.link:hover { color: var(--adcb-red); text-decoration: underline; }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge.good { background-color: #d1fae5; color: #065f46; }
+    .badge.warn { background-color: #fef3c7; color: #92400e; }
+    .badge.bad  { background-color: #fee2e2; color: #991b1b; }
+
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-top: 1px solid var(--adcb-border-gray);
+      background: #fff;
+      font-size: 14px;
+    }
+    .pager { display: flex; gap: 8px; }
+    .pager button {
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--adcb-border-gray);
+      background: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s ease;
+    }
+    .pager button:hover { background-color: #f0f0f0; }
+
+    .pill { padding: 2px 8px; border-radius: 999px; background: #f0f0f0; font-size: 12px; }
+    .loading { padding: 16px; }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo">
+      <img src="logo.svg" alt="ADCB Logo">
+    </div>
+    <nav>
+      <a href="dashboard.html" class="nav-link"><span>📊</span> Dashboard</a>
+      <a href="applications.html" class="nav-link active"><span>🗂</span> Applications</a>
+      <a href="customers.html" class="nav-link"><span>👥</span> Customers</a>
+      <a href="tasks.html" class="nav-link"><span>✅</span> Tasks</a>
+      <a href="reports.html" class="nav-link"><span>📈</span> Reports</a>
+      <a href="settings.html" class="nav-link"><span>⚙️</span> Settings</a>
+      <a href="logout.html" class="nav-link"><span>🚪</span> Logout</a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Applications <span id="total" class="pill"></span></h1>
+      <div style="display:flex; gap:8px">
+        <button id="exportCsv" class="btn secondary">Export CSV</button>
+        <button id="refresh" class="btn">Refresh</button>
+      </div>
+    </div>
+
+    <section class="filters">
+      <div class="row">
+        <input id="searchInput" type="text" placeholder="Search by Name, Email, App ID or Customer ID" />
+        <select id="statusSelect">
+          <option value="">Status: All</option>
+          <option>AIP Pending</option>
+          <option>DE Reject</option>
+          <option>DE Success</option>
+          <option>Temp Approved Limit</option>
+          <option>Final Offer</option>
+          <option>Final Offer Reject</option>
+          <option>KYC Pending</option>
+          <option>Telemarketing Assigned</option>
+          <option>KYC Fulfilled</option>
+          <option>Checker 1 Approval</option>
+          <option>Checker 1 Reject</option>
+          <option>Checker 2 Approval</option>
+          <option>Checker 2 Reject</option>
+          <option>Line Issued</option>
+          <option>Rejected</option>
+        </select>
+        <select id="pageSize">
+          <option value="10">Page size: 10</option>
+          <option value="15">15</option>
+          <option value="20">20</option>
+        </select>
+        <button id="searchBtn" class="btn">Search</button>
+      </div>
+    </section>
+
+    <section class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>App ID</th>
+            <th>Customer</th>
+            <th>Nationality</th>
+            <th>AECB</th>
+            <th>Status</th>
+            <th>Application Date</th>
+            <th>Last Update</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="8" class="loading">Loading...</td></tr>
+        </tbody>
+      </table>
+      <div class="table-footer">
+        <div id="rangeLabel">Showing 0–0 of 0</div>
+        <div class="pager">
+          <button id="prevBtn">Prev</button>
+          <button id="nextBtn">Next</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ---- MOCK API LAYER ----
+    const MOCK_DATA = [
+      { appId: "APP-11001", customerId: "CUS-90012", name: "Layla Hassan",   nationality: "Egypt",      aecb: null, status: "AIP Pending",            appDate: "2025-08-08", lastUpdate: "2025-08-10" },
+      { appId: "APP-11002", customerId: "CUS-90013", name: "Omar Al Farsi",  nationality: "Oman",       aecb: 710,  status: "DE Reject",               appDate: "2025-08-07", lastUpdate: "2025-08-09" },
+      { appId: "APP-11003", customerId: "CUS-90014", name: "Fatima Noor",    nationality: "Pakistan",   aecb: null, status: "DE Success",             appDate: "2025-08-10", lastUpdate: "2025-08-11" },
+      { appId: "APP-11004", customerId: "CUS-90015", name: "Mohammed Khan",  nationality: "Bangladesh", aecb: 600,  status: "Temp Approved Limit",     appDate: "2025-08-10", lastUpdate: "2025-08-12" },
+      { appId: "APP-11005", customerId: "CUS-90016", name: "Ali Jaber",      nationality: "Lebanon",    aecb: 750,  status: "Final Offer",             appDate: "2025-08-11", lastUpdate: "2025-08-12" },
+      { appId: "APP-11006", customerId: "CUS-90017", name: "Sara Mansoor",   nationality: "UAE",        aecb: 705,  status: "Final Offer Reject",      appDate: "2025-08-08", lastUpdate: "2025-08-08" },
+      { appId: "APP-11007", customerId: "CUS-90018", name: "Ravi Patel",     nationality: "India",      aecb: null, status: "KYC Pending",            appDate: "2025-08-09", lastUpdate: "2025-08-11" },
+      { appId: "APP-11008", customerId: "CUS-90019", name: "Ahmad Youssef",  nationality: "Jordan",     aecb: 640,  status: "Telemarketing Assigned",  appDate: "2025-08-09", lastUpdate: "2025-08-10" },
+      { appId: "APP-11009", customerId: "CUS-90020", name: "Zara Qureshi",   nationality: "Pakistan",   aecb: 680,  status: "KYC Fulfilled",           appDate: "2025-08-10", lastUpdate: "2025-08-12" },
+      { appId: "APP-11010", customerId: "CUS-90021", name: "Hassan Ali",     nationality: "Egypt",      aecb: 690,  status: "Checker 1 Approval",      appDate: "2025-08-10", lastUpdate: "2025-08-12" },
+      { appId: "APP-11011", customerId: "CUS-90022", name: "Meera Thomas",   nationality: "India",      aecb: 720,  status: "Checker 1 Reject",        appDate: "2025-08-07", lastUpdate: "2025-08-09" },
+      { appId: "APP-11012", customerId: "CUS-90023", name: "Yusuf Karim",    nationality: "Bangladesh", aecb: 650,  status: "Checker 2 Approval",      appDate: "2025-08-09", lastUpdate: "2025-08-11" },
+      { appId: "APP-11013", customerId: "CUS-90024", name: "Nadia Rahman",   nationality: "Pakistan",   aecb: 610,  status: "Checker 2 Reject",        appDate: "2025-08-09", lastUpdate: "2025-08-10" },
+      { appId: "APP-11014", customerId: "CUS-90025", name: "Salim Omar",     nationality: "UAE",        aecb: 730,  status: "Line Issued",             appDate: "2025-08-10", lastUpdate: "2025-08-12" },
+      { appId: "APP-11015", customerId: "CUS-90026", name: "Khalid Mahmood", nationality: "Pakistan",   aecb: 585,  status: "Rejected",                appDate: "2025-08-06", lastUpdate: "2025-08-08" },
+      { appId: "APP-11016", customerId: "CUS-90027", name: "Mina George",    nationality: "Egypt",      aecb: 675,  status: "Final Offer",             appDate: "2025-08-11", lastUpdate: "2025-08-12" }
+    ];
+
+    const mockApi = {
+      listApplications: async ({ status = "", search = "", page = 1, pageSize = 10 } = {}) => {
+        const delay = (ms) => new Promise(res => setTimeout(res, ms));
+        await delay(250 + Math.random() * 300);
+
+        const s = (search || "").trim().toLowerCase();
+        let filtered = MOCK_DATA.filter(r =>
+          (!status || r.status === status) &&
+          (!s || [r.appId, r.customerId, r.name].join(" ").toLowerCase().includes(s))
+        );
+
+        const total = filtered.length;
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize;
+        const items = filtered.slice(start, end);
+
+        return { items, total, page, pageSize };
+      }
+    };
+
+    // ---- UI LAYER ----
+    const tbody = document.getElementById("tbody");
+    const statusSelect = document.getElementById("statusSelect");
+    const pageSizeSel = document.getElementById("pageSize");
+    const searchInput = document.getElementById("searchInput");
+    const searchBtn = document.getElementById("searchBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const rangeLabel = document.getElementById("rangeLabel");
+    const totalPill = document.getElementById("total");
+    const refreshBtn = document.getElementById("refresh");
+    const exportBtn = document.getElementById("exportCsv");
+
+    const badgeClass = (status) => {
+      const good = ["DE Success", "Temp Approved Limit", "KYC Fulfilled", "Checker 1 Approval", "Checker 2 Approval", "Line Issued"];
+      const warn = ["AIP Pending", "Final Offer", "KYC Pending", "Telemarketing Assigned"];
+      const bad  = ["DE Reject", "Final Offer Reject", "Checker 1 Reject", "Checker 2 Reject", "Rejected"];
+      if (good.includes(status)) return "badge good";
+      if (warn.includes(status)) return "badge warn";
+      return "badge bad";
+    };
+
+    const nextActionLabel = (status) => {
+      switch (status) {
+        case "AIP Pending": return "Run DE";
+        case "DE Success": return "Set Temp Limit";
+        case "Temp Approved Limit": return "Collect IBAN";
+        case "Final Offer": return "Send Offer";
+        case "KYC Pending": return "Assign Runner";
+        case "Telemarketing Assigned": return "Schedule Call";
+        case "KYC Fulfilled": return "Checker 1 Review";
+        case "Checker 1 Approval": return "Checker 2 Review";
+        case "Checker 2 Approval": return "Issue Line";
+        default: return "Next";
+      }
+    };
+
+    let state = { page: 1, pageSize: 10, status: "", search: "" };
+
+    async function load() {
+      tbody.innerHTML = `<tr><td colspan="8" class="loading">Loading...</td></tr>`;
+      const { items, total, page, pageSize } = await mockApi.listApplications(state);
+      totalPill.textContent = `${total} records`;
+      rangeLabel.textContent = total === 0
+        ? "Showing 0–0 of 0"
+        : `Showing ${((page-1)*pageSize)+1}–${Math.min(page*pageSize,total)} of ${total}`;
+
+      tbody.innerHTML = items.length ? items.map(r => `
+        <tr>
+          <td><a class="link" href="detail.html">${r.appId}</a></td>
+          <td><a class="link" href="detail.html">${r.name}</a> <span style="opacity:.7">(${r.customerId})</span></td>
+          <td>${r.nationality}</td>
+          <td>${r.aecb ?? "—"}</td>
+          <td><span class="${badgeClass(r.status)}">${r.status}</span></td>
+          <td>${r.appDate}</td>
+          <td>${r.lastUpdate}</td>
+          <td><div class="actions"><button class="btn" style="background:#28a745;color:white" onclick="alert('Approve')">Approve</button><button class="btn" style="background:#dc3545;color:white" onclick="alert('Reject')">Reject</button></div></td>
+        </tr>
+      `).join("") : `<tr><td colspan="8" class="loading">No results</td></tr>`;
+    }
+
+    function readControls() {
+      state.status = statusSelect.value || "";
+      state.pageSize = +pageSizeSel.value;
+      state.search = searchInput.value || "";
+    }
+
+    searchBtn.addEventListener("click", () => { state.page = 1; readControls(); load(); });
+    refreshBtn.addEventListener("click", () => load());
+    prevBtn.addEventListener("click", () => { if (state.page > 1) { state.page--; load(); }});
+    nextBtn.addEventListener("click", async () => {
+      const next = await mockApi.listApplications({ ...state, page: state.page + 1 });
+      if (next.items.length) { state.page++; load(); }
+    });
+    pageSizeSel.addEventListener("change", () => { state.page = 1; readControls(); load(); });
+    statusSelect.addEventListener("change", () => { state.page = 1; readControls(); load(); });
+    searchInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { state.page = 1; readControls(); load(); } });
+
+    // CSV export of current filtered set
+    exportBtn.addEventListener("click", async () => {
+      const { items } = await mockApi.listApplications({ ...state, page: 1, pageSize: 10000 });
+      const headers = ["App ID","Customer ID","Name","Nationality","AECB","Status","Application Date","Last Update"];
+      const rows = items.map(r => [r.appId, r.customerId, r.name, r.nationality, r.aecb ?? "", r.status, r.appDate, r.lastUpdate]);
+      const csv = [headers, ...rows].map(r => r.map(x => `"${String(x).replace(/"/g,'""')}"`).join(",")).join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "applications_export.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    // initial load
+    load();
+  </script>
+</body>
+</html>
